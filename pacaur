@@ -1721,8 +1721,18 @@ Proceed() {
     local Y y N n answer
     Y="$(gettext pacman Y)"; y="${Y,,}";
     N="$(gettext pacman N)"; n="${N,,}"
+
+    CheckInput() {
+      case "$1" in
+        $Y|$y|$N|$n|'') return 0;;
+        *) return 1;;
+      esac
+    }
+
+    answer="Invalid"
     case "$1" in
-        y)  printf "${colorB}%s${reset} ${colorW}%s${reset}" "::" "$2 [$Y/$n] "
+        y)  while ! CheckInput $answer; do
+            printf "${colorB}%s${reset} ${colorW}%s${reset}" "::" "$2 [$Y/$n] "
             if [[ ! $noconfirm ]]; then
                 case "$TERM" in
                     dumb)
@@ -1741,11 +1751,14 @@ Proceed() {
                 answer=$Y
                 echo
             fi
+            done
+
             case $answer in
                 $Y|$y|'') return 0;;
                 *) return 1;;
             esac;;
-        n)  printf "${colorB}%s${reset} ${colorW}%s${reset}" "::" "$2 [$y/$N] "
+        n)  while ! CheckInput $answer; do
+            printf "${colorB}%s${reset} ${colorW}%s${reset}" "::" "$2 [$y/$N] "
             if [[ ! $noconfirm ]]; then
                 case "$TERM" in
                     dumb)
@@ -1764,6 +1777,7 @@ Proceed() {
                 answer=$N
                 echo
             fi
+            done
             case $answer in
                 $N|$n|'') return 0;;
                 *) return 1;;
