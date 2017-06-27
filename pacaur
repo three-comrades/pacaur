@@ -29,6 +29,7 @@ configdir="${XDG_CONFIG_DIRS:-/etc/xdg}/pacaur"
 userconfigdir="${XDG_CONFIG_HOME:-${HOME}/.config}/pacaur"
 userpacmandir="${XDG_CONFIG_HOME:-${HOME}/.config}/pacman"
 usercachedir="${XDG_CACHE_HOME:-${HOME}/.cache}/pacaur"
+userpatchdir="${XDG_CACHE_HOME:-${HOME}/.cache}/pacaur/aur_patches"
 tmpdir="${XDG_RUNTIME_DIR:-/tmp}"
 
 # preserve environment variables
@@ -1043,6 +1044,11 @@ Prompt() {
     fi
 }
 
+PatchPkg() {
+  cp "$userpatchdir/$1"/*.patch "$clonedir/$1"
+  patch "$clonedir/$1"/PKGBUILD "$clonedir/$1"/PKGBUILD.patch || Note "e" $"Could not patch PKGBUILD for $clonedir/$1"
+}
+
 DownloadPkgs() {
     local i
     # global basepkgs
@@ -1060,6 +1066,8 @@ DownloadPkgs() {
             [[ "$displaybuildfiles" = diff ]] && git rev-parse HEAD > ".git/HEAD.prev"
             git pull --ff -q
         fi
+
+        [[ -e "$userpatchdir/$i"/PKGBUILD.patch ]] && PatchPkg "$i"
     done
 
     # no results check
